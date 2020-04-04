@@ -1,0 +1,207 @@
+#!/bin/bash
+
+# SETUP --------------------------------------------------------------
+
+DIR=/mail	# docker-compose directory
+CONTAINER=mail	# docker container name
+TIMEOUT=3600	# a lot of time for a graceful container stop
+
+# --------------------------------------------------------------------
+
+VER=0.1
+
+set -ueo pipefail
+
+_checkBin() {
+	local cmd
+	for cmd in "$@"; do
+		hash "$cmd" 2>/dev/null || {
+			echo "Error: '$cmd' not found."
+			echo
+			exit 1
+		} >&2
+	done
+}
+
+# dependencies
+_checkBin "cat" "cut" "docker" "docker-compose" "grep" "jq" "printf" "sed" "tail" "tr"
+
+# Check if container is running
+# skip check, if first argument is empty, "status" or "start"
+if [ -n "${1:-}" ] && [ "${1:-}" != "status" ] && [ "${1:-}" != "start" ] && [ "${1:-}" != "restart" ]; then
+	if [ -z "$(docker ps -qf name=$CONTAINER)" ]; then
+		echo -e "Error: Container '$CONTAINER' is not up.\n" >&2
+		exit 1
+	fi
+fi
+
+cd "$DIR" &>/dev/null || {
+	echo "Error: Could not change directory to '$DIR'."
+	echo
+	echo "Check if 'DIR' is correctly defined in the script setup section."
+	echo
+	exit 1
+} >&2
+
+# print status
+_status() {
+	# $1	name
+	# $2	status
+	local indent spaces status
+	indent=14
+
+	# prepend spaces to multi line status
+	spaces=$(printf "%${indent}s")
+	status=$(echo -n "$2" | sed "s/^/$spaces/g")
+	status=${status:$indent}
+
+	printf "%-${indent}s%s\n" "$1:" "$status"
+}
+
+case "${1:-}" in
+	status) # status
+		if [ -n "$(docker ps -qf name=$CONTAINER)" ]; then
+			# Container uptime
+			_status "Container" "$(docker ps --no-trunc --format "{{.Names}};{{.Status}}" | grep "^${CONTAINER};" | cut -d';' -f2)"
+
+			# Fail2ban
+			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
+			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban)"
+
+			# Postfix mail queue
+			POSTFIX=$(docker exec "$CONTAINER" postqueue -p | tail -1 | cut -d' ' -f5)
+			[ -z "$POSTFIX" ] && POSTFIX="Mail queue is empty" || POSTFIX+=" mail(s) queued"
+			_status "Postfix" "$POSTFIX"
+
+			# Published ports
+			_status "Ports" "$(docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f8 | tr "\n" " ")"
+
+			# Package updates available?
+			_status "Packages" "$(docker exec "$CONTAINER" bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
+		else
+			echo "Container: down"
+		fi
+		;;
+
+	start)	# start
+		if [ -n "$(docker ps -qf name=$CONTAINER)" ]; then
+			echo "Container '$CONTAINER' is already up."
+			echo
+			exit
+		fi
+		docker-compose up -d
+		;;
+
+	stop)	# stop
+		docker-compose down -t "$TIMEOUT"
+		;;
+
+	rest*)	# restart
+		docker-compose down -t "$TIMEOUT"
+		docker-compose up -d
+		;;
+
+	setup)  # setup
+		if [ ! -x "setup.sh" ]; then
+			echo "Error: '$DIR/setup.sh' does not exist or is not executable."
+			echo
+			echo "To fix, run 'curl -o setup.sh https://raw.githubusercontent.com/tomav/docker-mailserver/master/setup.sh; chmod a+x ./setup.sh' in '$DIR'."
+			echo
+			exit 1
+		fi >&2
+		shift
+		./setup.sh "$@"
+		;;
+
+	queue)	# queue
+		docker exec "$CONTAINER" postqueue -p
+		;;
+
+	flush)	# flush
+		docker exec "$CONTAINER" postqueue -f
+		echo "Queue flushed."
+		;;
+
+	view)	# view
+		if [ -z "${2:-}" ]; then
+			echo "Error: Queue ID missing."
+		else
+			docker exec "$CONTAINER" postcat -q "$2"
+		fi >&2
+		;;
+
+	delete) # delete
+		if [ -z "${2:-}" ]; then
+			echo "Error: Queue ID missing."
+		else
+			shift
+			for i in "$@"; do
+				ARG+=("-d" "$i")
+			done
+			docker exec "$CONTAINER" postsuper "${ARG[@]}"
+		fi
+		;;
+
+	fail*)	# fail2ban
+		shift
+		docker exec -it "$CONTAINER" fail2ban "$@"
+		;;
+
+	ports)	# ports
+		echo "Published ports:"
+		echo
+		docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f4,8 | sed 's/"/:/g'
+		;;
+
+	postc*)	# postconf
+		docker exec "$CONTAINER" postconf
+		;;
+
+	logs)	# logs
+		if [ "${2:-}" == "-f" ]; then
+			docker logs -f "$CONTAINER"
+		else
+			docker logs "$CONTAINER"
+		fi
+		;;
+
+	login)	# login
+		docker exec -it "$CONTAINER" bash
+		;;
+
+	update-c*) # update-check
+		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt list --upgradable'
+		;;
+
+	update-p*) # update packages
+		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt-get upgrade'
+		;;
+
+	*)
+		APP=${0##*/}
+		cat <<-EOF
+		$APP $VER
+
+		Usage:
+
+		$APP status                           Show status
+		$APP start                            Start container
+		$APP stop                             Stop container
+		$APP restart                          Restart container
+		$APP setup                            Invoke 'setup.sh'
+		$APP queue                            Show mail queue
+		$APP flush                            Flush mail queue
+		$APP view   <queue id>                Show mail by queue id
+		$APP delete <queue id> [<queue id>]   Delete mail by queue id
+		$APP delete ALL                       Delete all queued mails
+		$APP fail2ban [<unban> <ip-address>]  Interact with fail2ban
+		$APP ports                            Show published ports
+		$APP postconf                         Show postfix configuration
+		$APP logs [-f]                        Show logs. Use -f to 'follow' the logs
+		$APP login                            Run container shell
+		$APP update-check                     Check for container package updates
+		$APP update-packages                  Update container packages
+		EOF
+		;;
+esac
+echo
