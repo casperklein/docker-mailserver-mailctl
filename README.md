@@ -47,3 +47,13 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
     mailctl login                            Run container shell
     mailctl update-check                     Check for container package updates
     mailctl update-packages                  Update container packages
+
+## Example:
+
+`mailctl status`
+
+    Container:    Up 4 hours
+    Fail2ban:     No IPs have been banned
+    Postfix:      Mail queue is empty
+    Ports:        25 465 993 995
+    Packages:     All packages are up to date.
