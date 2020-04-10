@@ -2,7 +2,7 @@ _mailctl() {
 	local cur prev options
 	cur=${COMP_WORDS[COMP_CWORD]}
 	prev=${COMP_WORDS[COMP_CWORD-1]}
-	options="status start stop restart setup queue flush view delete fail2ban ports postconf logs login update-check update-packages"
+	options="status start stop restart setup queue flush view delete fail2ban ports postconf logs login update-check update-packages versions"
 	if [ $COMP_CWORD -eq 1 ]; then
 		COMPREPLY=( $(compgen -W "${options[@]}" -- $cur) )
 	elif [ $COMP_CWORD -eq 2 ]; then
