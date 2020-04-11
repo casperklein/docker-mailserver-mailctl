@@ -181,7 +181,7 @@ case "${1:-}" in
 		PACKAGES=("amavisd-new" "dovecot-core" "clamav" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
-			echo $(docker exec "$CONTAINER" bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2")
+			docker exec "$CONTAINER" bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
 		done
 		;;
 
