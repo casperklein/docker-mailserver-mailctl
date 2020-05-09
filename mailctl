@@ -177,8 +177,8 @@ case "${1:-}" in
 		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt-get upgrade'
 		;;
 
-	version*) # most important package versions
-		PACKAGES=("amavisd-new" "dovecot-core" "clamav" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin")
+	version*) # Show package versions
+		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
 			docker exec "$CONTAINER" bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
@@ -209,6 +209,7 @@ case "${1:-}" in
 		$APP login                            Run container shell
 		$APP update-check                     Check for container package updates
 		$APP update-packages                  Update container packages
+		$APP versions                         Show package versions
 		EOF
 		;;
 esac
