@@ -1,32 +1,34 @@
 # mailctl
+
 mailctl is a script to easily interact with [docker-mailserver](https://github.com/tomav/docker-mailserver/).
 
 ## Installation:
+
 1. Download `mailctl`
 
-        curl -o mailctl https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl
+       curl -o mailctl https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl
 
 1. Make `mailctl` executable
 
-        chmod a+x mailctl
+       chmod a+x mailctl
 
 1. Change setup variables to your needs in `mailctl`
 
    Example:
 
-        DIR=/mail       # docker-compose directory
-        CONTAINER=mail  # docker container name
-        TIMEOUT=3600    # a lot of time for a graceful container stop
-        
+       DIR=/mail       # docker-compose directory
+       CONTAINER=mail  # docker container name
+       TIMEOUT=3600    # a lot of time for a graceful container stop
+
 ## Bash Completion:
 
 1. Download `mailctl-completion.bash`
 
-        curl -o mailctl-completion.bash https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl-completion.bash
+       curl -o mailctl-completion.bash https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl-completion.bash
 
 2. Source `mailctl-completion.bash` in your `.bashrc`
 
-        source /path/to/mailctl-completion.bash
+       source /path/to/mailctl-completion.bash
 
 ## Usage:
 
