@@ -29,7 +29,7 @@ _checkBin "cat" "cut" "docker" "docker-compose" "grep" "jq" "printf" "sed" "tail
 # Check if container is running
 # Skip check, if first argument is empty, "status" or "start"
 if [ -n "${1:-}" ] && [ "${1:-}" != "status" ] && [ "${1:-}" != "start" ] && [ "${1:-}" != "restart" ]; then
-	if [ -z "$(docker ps -qf name=$CONTAINER)" ]; then
+	if [ -z "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 		echo -e "Error: Container '$CONTAINER' is not up.\n" >&2
 		exit 1
 	fi
@@ -60,9 +60,9 @@ _status() {
 
 case "${1:-}" in
 	status) # Show status
-		if [ -n "$(docker ps -qf name=$CONTAINER)" ]; then
+		if [ -n "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 			# Container uptime
-			_status "Container" "$(docker ps --no-trunc --format "{{.Names}};{{.Status}}" | grep "^${CONTAINER};" | cut -d';' -f2)"
+			_status "Container" "$(docker ps --no-trunc --filter "name=^$CONTAINER$" --format "{{.Status}}")"
 
 			# Fail2ban
 			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
@@ -84,7 +84,7 @@ case "${1:-}" in
 		;;
 
 	start)	# Start container
-		if [ -n "$(docker ps -qf name=$CONTAINER)" ]; then
+		if [ -n "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 			echo "Container '$CONTAINER' is already up."
 			echo
 			exit
