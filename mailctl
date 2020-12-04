@@ -74,7 +74,7 @@ case "${1:-}" in
 
 			# Fail2ban
 			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
-			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban 2>/dev/null)"
+			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban)"
 
 			# Postfix mail queue
 			POSTFIX=$(docker exec "$CONTAINER" postqueue -p | tail -1 | cut -d' ' -f5)
