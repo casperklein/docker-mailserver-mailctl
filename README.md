@@ -1,6 +1,6 @@
 # mailctl
 
-mailctl is a script to easily interact with [docker-mailserver](https://github.com/tomav/docker-mailserver/).
+mailctl is a script to easily interact with [docker-mailserver](https://github.com/docker-mailserver/docker-mailserver/).
 
 ## Installation:
 

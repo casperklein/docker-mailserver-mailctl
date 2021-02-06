@@ -113,7 +113,7 @@ case "${1:-}" in
 		if [ ! -x "setup.sh" ]; then
 			echo "Error: '$DIR/setup.sh' does not exist or is not executable."
 			echo
-			echo "To fix, run 'curl -o setup.sh https://raw.githubusercontent.com/tomav/docker-mailserver/master/setup.sh; chmod a+x ./setup.sh' in '$DIR'."
+			echo "To fix, run 'curl -o setup.sh https://raw.githubusercontent.com/docker-mailserver/docker-mailserver/master/setup.sh; chmod a+x ./setup.sh' in '$DIR'."
 			echo
 			exit 1
 		fi >&2
