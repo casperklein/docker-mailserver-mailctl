@@ -14,7 +14,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 
 1. Change setup variables to your needs in `mailctl`
 
-   Example:
+   **Example**:
 
        DIR=/mail       # docker-compose directory
        CONTAINER=mail  # docker container name
