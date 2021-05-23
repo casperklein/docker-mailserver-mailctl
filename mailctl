@@ -8,7 +8,7 @@ TIMEOUT=3600	# a lot of time for a graceful container stop
 
 # --------------------------------------------------------------------
 
-VER=0.13.0
+VER=0.14.0
 
 set -ueo pipefail
 
@@ -177,6 +177,11 @@ case "${1:-}" in
 		docker exec -it "$CONTAINER" bash
 		;;
 
+	super*) # Interact with supervisorctl
+		shift
+		docker exec -it "$CONTAINER" supervisorctl "$@"
+		;;
+
 	update-c*) # Check for container package updates
 		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt list --upgradable'
 		;;
@@ -215,6 +220,7 @@ case "${1:-}" in
 		$APP postconf                         Show postfix configuration
 		$APP logs [-f]                        Show logs. Use -f to 'follow' the logs
 		$APP login                            Run container shell
+		$APP supervisor                       Interact with supervisorctl
 		$APP update-check                     Check for container package updates
 		$APP update-packages                  Update container packages
 		$APP versions                         Show package versions
