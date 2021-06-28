@@ -72,6 +72,9 @@ case "${1:-}" in
 			# Container uptime
 			_status "Container" "$(docker ps --no-trunc --filter "name=^$CONTAINER$" --format "{{.Status}}")"
 
+			# Version
+			_status "Version" "$(docker exec "$CONTAINER" cat /VERSION)"
+
 			# Fail2ban
 			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
 			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban)"
@@ -190,7 +193,9 @@ case "${1:-}" in
 		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt-get upgrade'
 		;;
 
-	version*) # Show package versions
+	version*) # Show versions
+		DMS_VER="$(docker exec "$CONTAINER" cat /VERSION)"
+		printf "%-15s%s\n\n" "Mailserver:" "$DMS_VER"
 		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
@@ -223,7 +228,7 @@ case "${1:-}" in
 		$APP supervisor                       Interact with supervisorctl
 		$APP update-check                     Check for container package updates
 		$APP update-packages                  Update container packages
-		$APP versions                         Show package versions
+		$APP versions                         Show versions
 		EOF
 		;;
 esac
