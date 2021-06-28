@@ -100,6 +100,8 @@ case "${1:-}" in
 			echo
 			exit
 		fi
+		# If container is stopped, remove container / network etc.
+		docker-compose down -t "$TIMEOUT" 2>/dev/null
 		docker-compose up -d
 		;;
 
