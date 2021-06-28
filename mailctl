@@ -8,7 +8,7 @@ TIMEOUT=3600	# a lot of time for a graceful container stop
 
 # --------------------------------------------------------------------
 
-VER=0.14.0
+VER=0.15.0
 
 set -ueo pipefail
 
