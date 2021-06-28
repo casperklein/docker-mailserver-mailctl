@@ -79,16 +79,16 @@ case "${1:-}" in
 			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
 			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban)"
 
-			# Postfix mail queue
-			POSTFIX=$(docker exec "$CONTAINER" postqueue -p | tail -1 | cut -d' ' -f5)
-			[ -z "$POSTFIX" ] && POSTFIX="Mail queue is empty" || POSTFIX+=" mail(s) queued"
-			_status "Postfix" "$POSTFIX"
+			# Package updates available?
+			_status "Packages" "$(docker exec "$CONTAINER" bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
 
 			# Published ports
 			_status "Ports" "$(docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f8 | tr "\n" " ")"
 
-			# Package updates available?
-			_status "Packages" "$(docker exec "$CONTAINER" bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
+			# Postfix mail queue
+			POSTFIX=$(docker exec "$CONTAINER" postqueue -p | tail -1 | cut -d' ' -f5)
+			[ -z "$POSTFIX" ] && POSTFIX="Mail queue is empty" || POSTFIX+=" mail(s) queued"
+			_status "Postfix" "$POSTFIX"
 
 			# Service status
 			_status "Supervisor" "$(docker exec "$CONTAINER" supervisorctl status | sort -b -k2,2)"
