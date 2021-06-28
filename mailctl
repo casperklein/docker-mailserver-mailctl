@@ -89,6 +89,9 @@ case "${1:-}" in
 
 			# Package updates available?
 			_status "Packages" "$(docker exec "$CONTAINER" bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
+
+			# Service status
+			_status "Supervisor" "$(docker exec "$CONTAINER" supervisorctl status | sort -b -k2,2)"
 		else
 			echo "Container: down"
 		fi
