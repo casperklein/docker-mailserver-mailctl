@@ -160,7 +160,7 @@ case "${1:-}" in
 
 	fail*)	# Interact with fail2ban
 		shift
-		docker exec -it "$CONTAINER" fail2ban "$@"
+		docker exec "$CONTAINER" fail2ban "$@"
 		;;
 
 	ports)	# Show published ports
