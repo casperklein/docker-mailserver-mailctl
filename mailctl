@@ -32,7 +32,7 @@ _checkBin() {
 }
 
 # Dependencies
-_checkBin "cat" "cut" "docker" "docker-compose" "jq" "printf" "sed" "tail" "tr"
+_checkBin "cat" "cut" "docker" "docker-compose" "fold" "jq" "printf" "sed" "tail" "tr"
 
 # Check if container is running
 # Skip check, if first argument is empty, "status" or "start"
@@ -58,9 +58,9 @@ _status() {
 	local indent spaces status
 	indent=14
 
-	# Prepend spaces to multi line status
+	# Wrap long lines and prepend spaces to multi line status
 	spaces=$(printf "%${indent}s")
-	status=$(echo -n "$2" | sed "s/^/$spaces/g")
+	status=$(echo -n "$2" | fold -s -w $(($(tput cols) - 16)) | sed "s/^/$spaces/g")
 	status=${status:$indent}
 
 	printf "%-${indent}s%s\n" "$1:" "$status"
