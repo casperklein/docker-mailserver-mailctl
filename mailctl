@@ -32,7 +32,7 @@ _checkBin() {
 }
 
 # Dependencies
-_checkBin "cat" "cut" "docker" "docker-compose" "fold" "jq" "printf" "sed" "tail" "tr"
+_checkBin "cat" "cut" "docker" "docker-compose" "fold" "jq" "printf" "sed" "tail" "tput" "tr"
 
 # Check if container is running
 # Skip check, if first argument is empty, "status" or "start"
