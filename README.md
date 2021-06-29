@@ -47,15 +47,38 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
     mailctl postconf                         Show postfix configuration
     mailctl logs [-f]                        Show logs. Use -f to 'follow' the logs
     mailctl login                            Run container shell
+    mailctl supervisor                       Interact with supervisorctl
     mailctl update-check                     Check for container package updates
     mailctl update-packages                  Update container packages
+    mailctl versions                         Show versions
 
 ## Example:
 
 `mailctl status`
 
-    Container:    Up 4 hours
+    Container:    Up 48 hours
+    Version:      10.0.0
     Fail2ban:     No IPs have been banned
-    Postfix:      Mail queue is empty
-    Ports:        25 465 993 995
     Packages:     All packages are up to date.
+    Ports:        25 465 993 995
+    Postfix:      Mail queue is empty
+    Supervisor:   amavis                           RUNNING   pid 2999, uptime 17:32:37
+                  cron                             RUNNING   pid 2913, uptime 2 days, 2:11:34
+                  dovecot                          RUNNING   pid 2920, uptime 2 days, 2:11:34
+                  fail2ban                         RUNNING   pid 2192, uptime 2 days, 2:11:34
+                  mailserver                       RUNNING   pid 24,   uptime 2 days, 2:11:39
+                  opendkim                         RUNNING   pid 2923, uptime 2 days, 2:11:34
+                  opendmarc                        RUNNING   pid 2935, uptime 2 days, 2:11:33
+                  postfix                          RUNNING   pid 2942, uptime 2 days, 2:11:33
+                  rsyslog                          RUNNING   pid 2915, uptime 2 days, 2:11:36
+                  changedetector                   RUNNING   pid 2916, uptime 2 days, 2:11:34
+                  update-check                     RUNNING   pid 2917, uptime 2 days, 2:11:35
+                  clamav                           STOPPED   Not started
+                  fetchmail                        STOPPED   Not started
+                  postgrey                         STOPPED   Not started
+                  postsrsd                         STOPPED   Not started
+                  saslauthd_ldap                   STOPPED   Not started
+                  saslauthd_mysql                  STOPPED   Not started
+                  saslauthd_pam                    STOPPED   Not started
+                  saslauthd_rimap                  STOPPED   Not started
+                  saslauthd_shadow                 STOPPED   Not started
