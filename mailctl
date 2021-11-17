@@ -97,6 +97,10 @@ case "${1:-}" in
 		fi
 		;;
 
+	config)	# show configuration
+		docker exec "$CONTAINER" cat /etc/dms-settings
+		;;
+
 	start)	# Start container
 		if [ -n "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 			echo "Container '$CONTAINER' is already up."
@@ -170,7 +174,8 @@ case "${1:-}" in
 		;;
 
 	postc*)	# Show postfix configuration
-		docker exec "$CONTAINER" postconf
+		shift
+		docker exec "$CONTAINER" postconf "$@"
 		;;
 
 	logs)	# Show logs
@@ -216,6 +221,7 @@ case "${1:-}" in
 		Usage:
 
 		$APP status                           Show status
+		$APP config                           Show configuration
 		$APP start                            Start container
 		$APP stop                             Stop container
 		$APP restart                          Restart container
