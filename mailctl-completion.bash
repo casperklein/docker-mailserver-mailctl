@@ -8,7 +8,7 @@ _mailctl() {
 	elif [ $COMP_CWORD -eq 2 ]; then
 		case "$prev" in
 			fail2ban)
-				COMPREPLY=( $(compgen -W "unban" -- $cur) )
+				COMPREPLY=( $(compgen -W "ban unban" -- $cur) )
 				;;
 			logs)
 				COMPREPLY=( $(compgen -W "-f" -- $cur) )

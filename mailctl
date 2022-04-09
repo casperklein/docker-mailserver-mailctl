@@ -231,7 +231,7 @@ case "${1:-}" in
 		$APP view   <queue id>                Show mail by queue id
 		$APP delete <queue id> [<queue id>]   Delete mail by queue id
 		$APP delete ALL                       Delete all queued mails
-		$APP fail2ban [<unban> <ip-address>]  Interact with fail2ban
+		$APP fail2ban [<ban|unban> <IP>]      Interact with fail2ban
 		$APP ports                            Show published ports
 		$APP postconf                         Show postfix configuration
 		$APP logs [-f]                        Show logs. Use -f to 'follow' the logs
