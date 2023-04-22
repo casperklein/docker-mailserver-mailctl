@@ -8,7 +8,7 @@ TIMEOUT=3600	# a lot of time for a graceful container stop
 
 # --------------------------------------------------------------------
 
-VER=0.17.0
+VER=0.18.0
 
 set -ueo pipefail
 
@@ -35,8 +35,8 @@ _checkBin() {
 _checkBin "cat" "cut" "docker" "docker-compose" "fold" "jq" "printf" "sed" "tail" "tput" "tr"
 
 # Check if container is running
-# Skip check, if first argument is empty, "status" or "start"
-if [ -n "${1:-}" ] && [ "${1:-}" != "status" ] && [ "${1:-}" != "start" ] && [ "${1:-}" != "restart" ]; then
+# Skip check, if first argument is empty, "status", "start", "stop" or "restart"
+if [ -n "${1:-}" ] && [ "${1:-}" != "status" ] && [ "${1:-}" != "start" ] && [ "${1:-}" != "stop" ] && [ "${1:-}" != "restart" ]; then
 	if [ -z "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 		echo -e "Error: Container '$CONTAINER' is not up.\n" >&2
 		exit 1
@@ -66,39 +66,59 @@ _status() {
 	printf "%-${indent}s%s\n" "$1:" "$status"
 }
 
+_ports() {
+	docker port "$CONTAINER"
+}
+
+_container() {
+	if [ "$1" == "-it" ]; then
+		shift
+		docker exec -it "$CONTAINER" "$@"
+	else
+		docker exec "$CONTAINER" "$@"
+	fi
+}
+
 case "${1:-}" in
 	status) # Show status
 		if [ -n "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
 			# Container uptime
 			_status "Container" "$(docker ps --no-trunc --filter "name=^$CONTAINER$" --format "{{.Status}}")"
+			echo
 
 			# Version
-			_status "Version" "$(docker exec "$CONTAINER" cat /VERSION)"
+			_status "Version" "$(_container cat /VERSION)"
+			echo
 
 			# Fail2ban
-			docker exec "$CONTAINER" ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
-			_status "Fail2ban" "$(docker exec "$CONTAINER" fail2ban)"
+			_container ls /var/run/fail2ban/fail2ban.sock &>/dev/null &&
+			_status "Fail2ban" "$(_container fail2ban)"
+			echo
 
 			# Package updates available?
-			_status "Packages" "$(docker exec "$CONTAINER" bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
+			_status "Packages" "$(_container bash -c 'apt -q update 2>/dev/null | grep "All packages are up to date" || echo "Updates available"')"
+			echo
 
 			# Published ports
-			_status "Ports" "$(docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f8 | tr "\n" " ")"
+			# _status "Ports" "$(docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f8 | tr "\n" " ")"
+			_status "Ports" "$(_ports)"
+			echo
 
 			# Postfix mail queue
-			POSTFIX=$(docker exec "$CONTAINER" postqueue -p | tail -1 | cut -d' ' -f5)
+			POSTFIX=$(_container postqueue -p | tail -1 | cut -d' ' -f5)
 			[ -z "$POSTFIX" ] && POSTFIX="Mail queue is empty" || POSTFIX+=" mail(s) queued"
 			_status "Postfix" "$POSTFIX"
+			echo
 
 			# Service status
-			_status "Supervisor" "$(docker exec "$CONTAINER" supervisorctl status | sort -b -k2,2)"
+			_status "Supervisor" "$(_container supervisorctl status | sort -b -k2,2)"
 		else
 			echo "Container: down"
 		fi
 		;;
 
 	config)	# show configuration
-		docker exec "$CONTAINER" cat /etc/dms-settings
+		_container cat /etc/dms-settings
 		;;
 
 	start)	# Start container
@@ -134,23 +154,35 @@ case "${1:-}" in
 		;;
 
 	queue)	# Show mail queue
-		docker exec "$CONTAINER" postqueue -p
+		_container postqueue -p
 		;;
 
 	flush)	# Flush mail queue
-		docker exec "$CONTAINER" postqueue -f
+		_container postqueue -f
 		echo "Queue flushed."
+		;;
+
+	unhold)	# Release mail that was put "on hold"
+		if [ -z "${2:-}" ]; then
+			echo "Error: Queue ID missing"
+		else
+			shift
+			for i in "$@"; do
+				ARG+=("-H" "$i")
+			done
+			_container postsuper "${ARG[@]}"
+		fi
 		;;
 
 	view)	# Show mail by queue id
 		if [ -z "${2:-}" ]; then
 			echo "Error: Queue ID missing."
 		else
-			docker exec "$CONTAINER" postcat -q "$2"
+			_container postcat -q "$2"
 		fi >&2
 		;;
 
-	delete) # Delete mail by queue id
+	delete) # Delete mail from queue
 		if [ -z "${2:-}" ]; then
 			echo "Error: Queue ID missing."
 		else
@@ -158,24 +190,25 @@ case "${1:-}" in
 			for i in "$@"; do
 				ARG+=("-d" "$i")
 			done
-			docker exec "$CONTAINER" postsuper "${ARG[@]}"
+			_container postsuper "${ARG[@]}"
 		fi
 		;;
 
 	fail*)	# Interact with fail2ban
 		shift
-		docker exec "$CONTAINER" fail2ban "$@"
+		_container fail2ban "$@"
 		;;
 
 	ports)	# Show published ports
 		echo "Published ports:"
 		echo
-		docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f4,8 | sed 's/"/:/g'
+		# docker inspect "$CONTAINER" | jq -r '.[].NetworkSettings.Ports | .[] | select(. != null) | tostring' | cut -d'"' -f4,8 | sed 's/"/:/g'
+		_ports
 		;;
 
 	postc*)	# Show postfix configuration
 		shift
-		docker exec "$CONTAINER" postconf "$@"
+		_container postconf "$@"
 		;;
 
 	logs)	# Show logs
@@ -187,29 +220,29 @@ case "${1:-}" in
 		;;
 
 	login)	# Run container shell
-		docker exec -it "$CONTAINER" bash
+		_container -it bash
 		;;
 
 	super*) # Interact with supervisorctl
 		shift
-		docker exec -it "$CONTAINER" supervisorctl "$@"
+		_container -it supervisorctl "$@"
 		;;
 
 	update-c*) # Check for container package updates
-		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt list --upgradable'
+		_container -it bash -c 'apt update && echo && apt list --upgradable'
 		;;
 
 	update-p*) # Update container packages
-		docker exec -it "$CONTAINER" bash -c 'apt update && echo && apt-get upgrade'
+		_container -it bash -c 'apt update && echo && apt-get upgrade'
 		;;
 
 	version*) # Show versions
-		DMS_VER="$(docker exec "$CONTAINER" cat /VERSION)"
+		DMS_VER="$(_container cat /VERSION)"
 		printf "%-15s%s\n\n" "Mailserver:" "$DMS_VER"
 		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
-			docker exec "$CONTAINER" bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
+			_container bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
 		done
 		;;
 
@@ -229,8 +262,10 @@ case "${1:-}" in
 		$APP queue                            Show mail queue
 		$APP flush                            Flush mail queue
 		$APP view   <queue id>                Show mail by queue id
-		$APP delete <queue id> [<queue id>]   Delete mail by queue id
-		$APP delete ALL                       Delete all queued mails
+		$APP unhold <queue id> [<queue id>]   Release mail that was put "on hold" (marked with '!')
+		$APP unhold ALL                       Release all mails that were put "on hold" (marked with '!')
+		$APP delete <queue id> [<queue id>]   Delete mail from queue
+		$APP delete ALL                       Delete all mails from queue
 		$APP fail2ban [<ban|unban> <IP>]      Interact with fail2ban
 		$APP ports                            Show published ports
 		$APP postconf                         Show postfix configuration
