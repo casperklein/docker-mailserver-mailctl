@@ -33,6 +33,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 ## Usage
 
     mailctl status                           Show status
+    mailctl config                           Show configuration
     mailctl start                            Start container
     mailctl stop                             Stop container
     mailctl restart                          Restart container
@@ -40,9 +41,11 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
     mailctl queue                            Show mail queue
     mailctl flush                            Flush mail queue
     mailctl view   <queue id>                Show mail by queue id
-    mailctl delete <queue id> [<queue id>]   Delete mail by queue id
-    mailctl delete ALL                       Delete all queued mails
-    mailctl fail2ban [<unban> <ip-address>]  Interact with fail2ban
+    mailctl unhold <queue id> [<queue id>]   Release mail that was put "on hold" (marked with '!')
+    mailctl unhold ALL                       Release all mails that were put "on hold" (marked with '!')
+    mailctl delete <queue id> [<queue id>]   Delete mail from queue
+    mailctl delete ALL                       Delete all mails from queue
+    mailctl fail2ban [<ban|unban> <IP>]      Interact with fail2ban
     mailctl ports                            Show published ports
     mailctl postconf                         Show postfix configuration
     mailctl logs [-f]                        Show logs. Use -f to 'follow' the logs
