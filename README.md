@@ -59,12 +59,21 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 
 `mailctl status`
 
-    Container:    Up 48 hours
-    Version:      10.0.0
+    Container:    Up 48 hours (healthy)
+
+    Version:      12.0.0
+
     Fail2ban:     No IPs have been banned
+
     Packages:     All packages are up to date.
-    Ports:        25 465 993 995
+
+    Ports:        25/tcp -> 0.0.0.0:25
+                  465/tcp -> 0.0.0.0:465
+                  993/tcp -> 0.0.0.0:993
+                  995/tcp -> 0.0.0.0:995
+
     Postfix:      Mail queue is empty
+
     Supervisor:   amavis                           RUNNING   pid 2999, uptime 17:32:37
                   cron                             RUNNING   pid 2913, uptime 2 days, 2:11:34
                   dovecot                          RUNNING   pid 2920, uptime 2 days, 2:11:34
