@@ -26,7 +26,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 
        curl -o mailctl-completion.bash https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl-completion.bash
 
-2. Source `mailctl-completion.bash` in your `.bashrc`
+2. Source `mailctl-completion.bash` in your `~/.bashrc`
 
        source /path/to/mailctl-completion.bash
 
