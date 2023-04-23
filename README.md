@@ -2,7 +2,7 @@
 
 mailctl is a script to easily interact with [docker-mailserver](https://github.com/docker-mailserver/docker-mailserver/).
 
-## Installation:
+## Installation
 
 1. Download `mailctl`
 
@@ -20,7 +20,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
        CONTAINER=mail  # docker container name
        TIMEOUT=3600    # a lot of time for a graceful container stop
 
-## Bash Completion:
+## Bash Completion
 
 1. Download `mailctl-completion.bash`
 
@@ -30,7 +30,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 
        source /path/to/mailctl-completion.bash
 
-## Usage:
+## Usage
 
     mailctl status                           Show status
     mailctl start                            Start container
@@ -52,7 +52,7 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
     mailctl update-packages                  Update container packages
     mailctl versions                         Show versions
 
-## Example:
+## Example
 
 `mailctl status`
 
