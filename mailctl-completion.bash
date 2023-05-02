@@ -11,7 +11,7 @@ _mailctl() {
 				COMPREPLY=( $(compgen -W "ALL" -- $cur) )
 				;;
 			fail2ban)
-				COMPREPLY=( $(compgen -W "ban unban" -- $cur) )
+				COMPREPLY=( $(compgen -W "ban unban log" -- $cur) )
 				;;
 			logs)
 				COMPREPLY=( $(compgen -W "-f" -- $cur) )

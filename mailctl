@@ -8,7 +8,7 @@ TIMEOUT=3600	# a lot of time for a graceful container stop
 
 # --------------------------------------------------------------------
 
-VER=0.18.0
+VER=0.19.0
 
 set -ueo pipefail
 
@@ -267,6 +267,7 @@ case "${1:-}" in
 		$APP delete <queue id> [<queue id>]   Delete mail from queue
 		$APP delete ALL                       Delete all mails from queue
 		$APP fail2ban [<ban|unban> <IP>]      Interact with fail2ban
+		$APP fail2ban log                     Show fail2ban log
 		$APP ports                            Show published ports
 		$APP postconf                         Show postfix configuration
 		$APP logs [-f]                        Show logs. Use -f to 'follow' the logs
