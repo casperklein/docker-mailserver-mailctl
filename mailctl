@@ -2,8 +2,8 @@
 
 # SETUP --------------------------------------------------------------
 
-DIR=/mail	# docker-compose directory
-CONTAINER=mail	# docker container name
+DIR=/mail	# compose.yaml directory
+CONTAINER=mail	# DMS container name
 TIMEOUT=3600	# a lot of time for a graceful container stop
 
 # --------------------------------------------------------------------
@@ -79,6 +79,12 @@ _container() {
 	fi
 }
 
+_getDMSVersion() {
+	# shellcheck disable=SC2016
+	# todo 'cat /VERSION' is kept for compatibility with DMS versions < v13.0.1; remove in the future
+	_container bash -c 'cat /VERSION 2>/dev/null || printf "%s" "$DMS_RELEASE"'
+}
+
 case "${1:-}" in
 	status) # Show status
 		if [ -n "$(docker ps -q --filter "name=^$CONTAINER$")" ]; then
@@ -87,7 +93,7 @@ case "${1:-}" in
 			echo
 
 			# Version
-			_status "Version" "$(_container cat /VERSION)"
+			_status "Version" "$(_getDMSVersion)"
 			echo
 
 			# Fail2ban
@@ -237,8 +243,7 @@ case "${1:-}" in
 		;;
 
 	version*) # Show versions
-		DMS_VER="$(_container cat /VERSION)"
-		printf "%-15s%s\n\n" "Mailserver:" "$DMS_VER"
+		printf "%-15s%s\n\n" "Mailserver:" "$(_getDMSVersion)"
 		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
