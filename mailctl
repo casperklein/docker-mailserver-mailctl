@@ -2,9 +2,12 @@
 
 # SETUP --------------------------------------------------------------
 
-DIR=/mail	# compose.yaml directory
-CONTAINER=mail	# DMS container name
-TIMEOUT=3600	# a lot of time for a graceful container stop
+DIR=/mail       # compose.yaml directory
+CONTAINER=mail  # DMS container name
+TIMEOUT=3600    # a lot of time for a graceful container stop
+
+# DOCKER_COMPOSE="docker-compose" # lagacy docker-compose
+DOCKER_COMPOSE="docker compose"   # compose plugin
 
 # --------------------------------------------------------------------
 
@@ -29,10 +32,17 @@ _checkBin() {
 			exit 1
 		} >&2
 	done
+
+	# docker compose
+	$DOCKER_COMPOSE version &>/dev/null || {
+		echo "Error: '$DOCKER_COMPOSE' not available."
+		echo
+		exit 1
+	} >&2
 }
 
 # Dependencies
-_checkBin "cat" "cut" "docker" "docker-compose" "fold" "jq" "printf" "sed" "tail" "tput" "tr"
+_checkBin "cat" "cut" "docker" "fold" "jq" "printf" "sed" "tail" "tput" "tr"
 
 # Check if container is running
 # Skip check, if first argument is empty, "status", "start", "stop" or "restart"
@@ -134,17 +144,17 @@ case "${1:-}" in
 			exit
 		fi
 		# If container is stopped, remove container / network etc.
-		docker-compose down -t "$TIMEOUT" 2>/dev/null || true
-		docker-compose up -d
+		$DOCKER_COMPOSE down -t "$TIMEOUT" 2>/dev/null || true
+		$DOCKER_COMPOSE up -d
 		;;
 
 	stop)	# Stop container
-		docker-compose down -t "$TIMEOUT"
+		$DOCKER_COMPOSE down -t "$TIMEOUT"
 		;;
 
 	resta*)	#  Restart container
-		docker-compose down -t "$TIMEOUT"
-		docker-compose up -d
+		$DOCKER_COMPOSE down -t "$TIMEOUT"
+		$DOCKER_COMPOSE up -d
 		;;
 
 	setup)  # Invoke 'setup.sh'
