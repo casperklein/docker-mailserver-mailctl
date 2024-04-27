@@ -22,7 +22,13 @@ mailctl is a script to easily interact with [docker-mailserver](https://github.c
 
 ## Bash Completion
 
-1. Download `mailctl-completion.bash`
+If the `bash-completion` package is installed, mailctl completion can be loaded automatically:
+
+       curl -o /usr/share/bash-completion/completions/mailctl https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl-completion.bash
+
+Alternatively you can source the completion file:
+
+1. Download:
 
        curl -o mailctl-completion.bash https://raw.githubusercontent.com/casperklein/docker-mailserver-mailctl/master/mailctl-completion.bash
 
