@@ -254,7 +254,7 @@ case "${1:-}" in
 
 	version*) # Show versions
 		printf "%-15s%s\n\n" "Mailserver:" "$(_getDMSVersion)"
-		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "fetchmail" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
+		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "fetchmail" "getmail6" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
 			_container bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
