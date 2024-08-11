@@ -257,7 +257,7 @@ case "${1:-}" in
 		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "fetchmail" "getmail6" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
-			_container bash -c "dpkg -s $i | grep ^Version | cut -d' ' -f2"
+			_container bash -c "set -o pipefail; dpkg -s $i 2>/dev/null | grep ^Version | cut -d' ' -f2 || echo 'Package not installed.'"
 		done
 		;;
 
