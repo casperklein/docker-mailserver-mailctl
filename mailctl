@@ -11,7 +11,7 @@ DOCKER_COMPOSE="docker compose"   # compose plugin
 
 # --------------------------------------------------------------------
 
-VER=0.20.0
+VER=0.21.0
 
 set -ueo pipefail
 
