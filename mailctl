@@ -11,7 +11,7 @@ DOCKER_COMPOSE="docker compose"   # compose plugin
 
 # --------------------------------------------------------------------
 
-VER=0.21.0
+VER=0.22.0
 
 set -ueo pipefail
 
@@ -93,6 +93,10 @@ _getDMSVersion() {
 	# shellcheck disable=SC2016
 	# todo 'cat /VERSION' is kept for compatibility with DMS versions < v13.0.1; remove in the future
 	_container bash -c 'cat /VERSION 2>/dev/null || printf "%s" "$DMS_RELEASE"'
+}
+
+_getDebianVersion() {
+	_container bash -c 'cat /etc/debian_version'
 }
 
 case "${1:-}" in
@@ -227,6 +231,10 @@ case "${1:-}" in
 		_container postconf "$@"
 		;;
 
+	proce*) # Show container processes
+		_container -it ps auxf
+		;;
+
 	logs)	# Show logs
 		if [ "${2:-}" == "-f" ]; then
 			docker logs -f "$CONTAINER"
@@ -253,7 +261,8 @@ case "${1:-}" in
 		;;
 
 	version*) # Show versions
-		printf "%-15s%s\n\n" "Mailserver:" "$(_getDMSVersion)"
+		printf "%-15s%s\n" "Mailserver:" "$(_getDMSVersion)"
+		printf "%-15s%s\n\n" "Debian:" "$(_getDebianVersion)"
 		PACKAGES=("amavisd-new" "clamav" "dovecot-core" "fail2ban" "fetchmail" "getmail6" "rspamd" "opendkim" "opendmarc" "postfix" "spamassassin" "supervisor")
 		for i in "${PACKAGES[@]}"; do
 			printf "%-15s" "$i:"
@@ -285,6 +294,7 @@ case "${1:-}" in
 		$APP fail2ban log                     Show fail2ban log
 		$APP ports                            Show published ports
 		$APP postconf                         Show postfix configuration
+		$APP processes                        Show container processes
 		$APP logs [-f]                        Show logs. Use -f to 'follow' the logs
 		$APP login                            Run container shell
 		$APP supervisor                       Interact with supervisorctl
